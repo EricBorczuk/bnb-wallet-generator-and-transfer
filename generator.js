@@ -54,8 +54,8 @@ for (let i = 0; i < numberOfWallets; i++) {
 // }
 
 // Write to a sqlite database called 'bnb_wallets.db'
-const db = new Database('bnb_wallets.db');
-const insertStmt = db.prepare('INSERT INTO wallet (mnemonic, pk, addr, balance, balance_as_of, last_cashout) VALUES (?, ?, ?, ?, ?, ?)');
+const db = new Database('bnb_wallets.db')
+const insertStmt = db.prepare('INSERT INTO wallet (mnemonic, pk, addr, balance, balance_as_of, last_cashout) VALUES (?, ?, ?, ?, ?, ?)')
 rows.forEach(row => {
   insertStmt.run(row[0], row[1], row[2], 0, new Date().toISOString(), '2000-01-01T00:00:00Z')
 })

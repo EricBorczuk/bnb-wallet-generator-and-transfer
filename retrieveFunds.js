@@ -1,8 +1,14 @@
 const { web3, BN, readWalletsWithPrivateKeys, calculateFee, performTransfer, writeDataToFile, getFormattedDateTime } = require("./utils")
+const Database = require('better-sqlite3')
 
-async function retrieveFunds(walletFilePath, centralWalletAddress) {
+async function retrieveFunds(dbName, centralWalletAddress) {
   const results = []
-  const wallets = await readWalletsWithPrivateKeys(walletFilePath)
+  const db = new Database('bnb_wallets.db')
+  const walletRows = db.prepare('SELECT * FROM wallet WHERE balance > 0').all();
+  wallets = walletRows.map(walletRow => {
+    return { "address": walletRow.addr, "privateKey": walletRow.pk }
+  })
+  console.log(`${wallets.length} wallets with non-zero balance found in database`)
   for (const wallet of wallets) {
     const balance = await web3.eth.getBalance(wallet.address)
     if (new BN(balance).isZero()) {
@@ -53,14 +59,14 @@ async function retrieveFunds(walletFilePath, centralWalletAddress) {
 }
 
 async function main() {
-  const [walletFilePath, centralWalletAddress] = process.argv.slice(2)
-  if (!walletFilePath || !centralWalletAddress) {
-    console.error("Please specify the wallet file path and the central wallet address.")
+  const [dbName, centralWalletAddress] = process.argv.slice(2)
+  if (!dbName || !centralWalletAddress) {
+    console.error("Please specify the database name and the central wallet address.")
     process.exit(1)
   }
 
   try {
-    const results = await retrieveFunds(walletFilePath, centralWalletAddress)
+    const results = await retrieveFunds(dbName, centralWalletAddress)
     let format = "csv"
     if (format === "csv") {
       let content = "Timestamp,From,To,TransactionHash,Status,AmountTransferred,GasFee\n"
