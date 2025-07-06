@@ -16,7 +16,7 @@ async function main() {
     const updateStmt = db.prepare('update wallet set balance = ?, balance_as_of = ? where addr = ?');
     balances.forEach(balanceItem => {
         console.log(`Updating to ${balanceItem[0]} for ${balanceItem[2]}`)
-        updateStmt.run(balanceItem[0], balanceItem[1], balanceItem[2])
+        updateStmt.run(Number(balanceItem[0]), balanceItem[1], balanceItem[2])
     })
   } catch (error) {
     console.error("An unexpected error occurred:", error)

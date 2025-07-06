@@ -4,16 +4,11 @@ const { ethers } = require("ethers")
 const Database = require('better-sqlite3')
 
 // Parse command-line arguments
-const numberOfWallets = process.argv.length > 2 ? parseInt(process.argv[2], 10) : 1
-const format = process.argv.length > 3 ? process.argv[3] : "csv" // Default format is 'csv'
+const dbName = process.argv[2]
+const numberOfWallets = process.argv.length > 3 ? parseInt(process.argv[3], 10) : 1
 
 if (isNaN(numberOfWallets) || numberOfWallets <= 0) {
   console.error("⛔️ Error: Please provide a valid number of wallets to generate!")
-  process.exit(1)
-}
-
-if (!["csv", "json"].includes(format.toLowerCase())) {
-  console.error('⛔️ Error: Format must be either "csv" or "json"!')
   process.exit(1)
 }
 
@@ -26,7 +21,7 @@ function generateWallet() {
   }
 }
 
-console.log(`✨ Generating ${numberOfWallets} wallet(s) in ${format} format...`)
+console.log(`✨ Generating ${numberOfWallets} wallet(s)...`)
 let wallets = []
 let rows = []
 
@@ -53,8 +48,8 @@ for (let i = 0; i < numberOfWallets; i++) {
 //   writeDataToFile("wallets", wallets, "json") // Ensure proper filename for JSON
 // }
 
-// Write to a sqlite database called 'bnb_wallets.db'
-const db = new Database('bnb_wallets.db')
+// Write to a sqlite database
+const db = new Database(dbName)
 const insertStmt = db.prepare('INSERT INTO wallet (mnemonic, pk, addr, balance, balance_as_of, last_cashout) VALUES (?, ?, ?, ?, ?, ?)')
 rows.forEach(row => {
   insertStmt.run(row[0], row[1], row[2], 0, new Date().toISOString(), '2000-01-01T00:00:00Z')
