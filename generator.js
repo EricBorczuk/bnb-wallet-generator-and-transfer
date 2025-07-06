@@ -1,6 +1,7 @@
 const { ethers } = require("ethers")
-const { writeDataToFile } = require("./utils")
-const { stringify } = require("csv-stringify/sync")
+// const { writeDataToFile } = require("./utils")
+// const { stringify } = require("csv-stringify/sync")
+const Database = require('better-sqlite3')
 
 // Parse command-line arguments
 const numberOfWallets = process.argv.length > 2 ? parseInt(process.argv[2], 10) : 1
@@ -43,13 +44,21 @@ for (let i = 0; i < numberOfWallets; i++) {
   rows.push([wallet.mnemonic, wallet.privateKey, wallet.walletAddress])
 }
 
-let csvContent
-// Save wallets to a file using the utility function
-if (format === "csv") {
-  csvContent = stringify(rows, { header: true, columns: ["Mnemonic", "PrivateKey", "WalletAddress"] })
-  writeDataToFile("wallets", csvContent, "csv") // Ensure proper filename for CSV
-} else {
-  writeDataToFile("wallets", wallets, "json") // Ensure proper filename for JSON
-}
+// let csvContent
+// // Save wallets to a file using the utility function
+// if (format === "csv") {
+//   csvContent = stringify(rows, { header: true, columns: ["Mnemonic", "PrivateKey", "WalletAddress"] })
+//   writeDataToFile("wallets", csvContent, "csv") // Ensure proper filename for CSV
+// } else {
+//   writeDataToFile("wallets", wallets, "json") // Ensure proper filename for JSON
+// }
 
-console.log(`✨ Generated and saved ${numberOfWallets} wallet(s) in ${format} format.`)
+// Write to a sqlite database called 'bnb_wallets.db'
+const db = new Database('bnb_wallets.db');
+const insertStmt = db.prepare('INSERT INTO wallet (mnemonic, pk, addr, balance, balance_as_of, last_cashout) VALUES (?, ?, ?, ?, ?, ?)');
+rows.forEach(row => {
+  insertStmt.run(row[0], row[1], row[2], 0, new Date().toISOString(), '2000-01-01T00:00:00Z')
+})
+db.close()
+
+console.log(`✨ Generated and saved ${numberOfWallets} wallet(s) to db.`)
